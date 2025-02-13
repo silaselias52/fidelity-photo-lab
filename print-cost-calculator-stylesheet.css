@@ -1,0 +1,115 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    margin: 0;
+}
+ 
+  h3 {
+    color: black;
+    text-align: center;
+  }
+
+.container {
+    width: 90%;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  float: center;
+  }
+
+.select {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #ffffff;
+}
+
+.input {
+    width: 10%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #ffffff;
+}
+
+button {
+    width: 60%;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  	float: right;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.subtotal {
+    font-size: 14px;
+    margin-top: 20px;
+    text-align: center;
+    color: black;
+}
+
+.retail-price {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    color: black;
+}
+
+/* Styles for Paper Image Display */
+.paper-image-container {
+    text-align: center; /* Center-aligns the image */
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.paper-image {
+    max-width: 50%;  /* Ensures image scales properly */
+    height: auto;
+    border-radius: 8px; /* Adds rounded corners */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Adds a slight shadow for better visibility */
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; /* Smooth transition effects */
+    opacity: 0; /* Initially hidden */
+}
+
+.paper-image.visible {
+    opacity: 1; /* Fade in effect */
+    transform: scale(1); /* Normal scale */
+}
+
+.paper-image.hidden {
+    opacity: 0; /* Fade out effect */
+    transform: scale(0.9); /* Slightly shrinks when hidden */
+}
+
+/* Mobile-friendly styling */
+@media (max-width: 768px) {
+    .paper-image {
+        max-width: 90%; /* Makes the image more responsive on smaller screens */
+    }
+}
