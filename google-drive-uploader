@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload to Google Drive</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h3>Upload Your File to Print</h3>
+        <button class="auth-btn" onclick="authenticate()">Login with Google</button>
+        
+        <div class="file-upload-container">
+            <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="previewImage(event)" />
+            <button class="upload-btn" onclick="uploadFile()">Upload</button>
+        </div>
+
+        <div class="image-preview-container">
+            <img id="imagePreview" src="" alt="Image Preview" style="display: none;" />
+        </div>
+    </div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        const CLIENT_ID = "519692332922-n4iufrepbnigjtlrpbauj2lkmnjti6on.apps.googleusercontent.com";
+        const API_KEY = "AIzaSyDHaw4ajMqNpjQhfQxVQ3aQMuCytWLzZRU";
+        const FOLDER_ID = "1d8vy8hRFA5MzPD1-QBdce1TK_s9W5JFT";
+
+        const SCOPES = "https://www.googleapis.com/auth/drive.file";
+        let tokenClient;
+        let accessToken = null;
+
+        function loadGoogleAPI() {
+            gapi.load("client", () => {
