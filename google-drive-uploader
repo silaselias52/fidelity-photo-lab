@@ -34,3 +34,79 @@
 
         function loadGoogleAPI() {
             gapi.load("client", () => {
+                console.log("Google API loaded successfully.");
+            });
+        }
+        window.onload = loadGoogleAPI;
+
+function authenticate() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        ux_mode: "popup",
+        redirect_uri: window.location.origin, // Ensures correct redirection
+        callback: (response) => {
+            if (response.error) {
+                console.error("OAuth Error:", response);
+            } else {
+                accessToken = response.access_token;
+                alert("Authentication Successful!");
+            }
+        }
+    });
+    tokenClient.requestAccessToken();
+}
+
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById("imagePreview");
+                    preview.src = e.target.result;
+                    preview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function uploadFile() {
+            if (!accessToken) {
+                alert("Login with your Google account before uploading photos.");
+                return;
+            }
+
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Please select a file.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const metadata = {
+                name: file.name,
+                parents: [FOLDER_ID],
+                mimeType: file.type
+            };
+
+            const formData = new FormData();
+            formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+            formData.append("file", file);
+
+            const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${accessToken}` },
+                body: formData
+            });
+
+            if (response.ok) {
+                alert("File uploaded successfully!");
+            } else {
+                alert("Upload failed.");
+                console.error("Upload Error:", await response.json());
+            }
+        }
+    </script>
+</body>
+</html>
