@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Cost Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.20.12/babel.min.js"></script>
+    <link rel="stylesheet" href="print_cost_styles_withphoto.css">
+</head>
+<body>
+    <div id="print-cost-calculator" class="container"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const inkDatabase = { "Canon CLI-42": 1.201923 };
+        const paperDatabase = [
+            { type: "Canon Pro Luster", size: "13x19", boxCost: 99.99, sheetsPerBox: 50, inkUsage: 4.0 },
+            { type: "Canon Pro Luster", size: "8.5x11", boxCost: 34.99, sheetsPerBox: 50, inkUsage: 3.0 },
+            { type: "Canon Plus Semi-Gloss", size: "13x19", boxCost: 99.99, sheetsPerBox: 50, inkUsage: 4.0 },
+            { type: "Canon Plus Semi-Gloss", size: "8.5x11", boxCost: 34.99, sheetsPerBox: 50, inkUsage: 3.0 },
+            { type: "Canon Plus Semi-Gloss", size: "8x10", boxCost: 34.99, sheetsPerBox: 50, inkUsage: 2.5 },
+            { type: "Canon Plus Semi-Gloss", size: "5x7", boxCost: 9.99, sheetsPerBox: 20, inkUsage: 1.5 },
+            { type: "Canon Plus Semi-Gloss", size: "4x6", boxCost: 12.49, sheetsPerBox: 50, inkUsage: 1.0 },
+            { type: "Canon Plus Glossy II", size: "13x19", boxCost: 36.99, sheetsPerBox: 20, inkUsage: 4.0 },
+            { type: "Canon Plus Glossy II", size: "8.5x11", boxCost: 15.99, sheetsPerBox: 20, inkUsage: 3.0 },
+            { type: "Canon Plus Glossy II", size: "5x7", boxCost: 9.99, sheetsPerBox: 20, inkUsage: 1.5 },
+            { type: "Canon Plus Glossy II", size: "4x6", boxCost: 12.99, sheetsPerBox: 50, inkUsage: 1.0 },
+            { type: "Canon Pro Premium Matte", size: "13x19", boxCost: 99.99, sheetsPerBox: 50, inkUsage: 5.0 },
+            { type: "Canon Pro Premium Matte", size: "8.5x11", boxCost: 29.99, sheetsPerBox: 50, inkUsage: 4.0 },
+            { type: "Hahnemuhle Photo Rag", size: "13x19", boxCost: 105.85, sheetsPerBox: 25, inkUsage: 5.0 },
+            { type: "Hahnemuhle Photo Rag", size: "11x17", boxCost: 83.10, sheetsPerBox: 25, inkUsage: 4.0 },
+            { type: "Hahnemuhle Photo Rag", size: "8.5x11", boxCost: 41.85, sheetsPerBox: 25, inkUsage: 3.0 },
+            { type: "Hahnemuhle Photo Rag Baryta", size: "13x19", boxCost: 170.80, sheetsPerBox: 25, inkUsage: 5.0 },
+            { type: "Hahnemuhle Photo Rag Baryta", size: "11x17", boxCost: 115.60, sheetsPerBox: 25, inkUsage: 4.0 },
+            { type: "Hahnemuhle Photo Rag Baryta", size: "8.5x11", boxCost: 60.70, sheetsPerBox: 25, inkUsage: 3.0 },
+            { type: "Hahnemuhle Photo Rag Pearl", size: "13x19", boxCost: 153.55, sheetsPerBox: 25, inkUsage: 4.0 },
+            { type: "Hahnemuhle Photo Rag Pearl", size: "8.5x11", boxCost: 60.95, sheetsPerBox: 25, inkUsage: 3.0 }
+        ];
+        
+        // FIX: Use relative paths instead of absolute paths
+        const paperImages = {
+            "Canon Pro Luster": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee087230d13e2faaea1e/1738796553152/Luster.JPG",
+            "Canon Plus Semi-Gloss": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee2d3861091fef3b48fa/1738796589165/SemiGloss.jpg",
+            "Canon Plus Glossy II": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee08cbd439654b701300/1738796552482/Glossy.jpg",
+            "Canon Pro Premium Matte": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee088a753c6154ac116d/1738796553209/Matte.jpg",
+            "Hahnemuhle Photo Rag": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee0840031d2ed1564137/1738796553247/Rag.JPG",
+            "Hahnemuhle Photo Rag Baryta": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee0878459043d135e0ee/1738796552567/Baryta.jpg",
+            "Hahnemuhle Photo Rag Pearl": "https://static1.squarespace.com/static/67a2437faae117027029d0c5/t/67a3ee08b0cd90727762f647/1738796553238/Pearl.jpg",
+        };
+
+        function PrintCostCalculator() {
+            const [selectedPaperType, setSelectedPaperType] = useState("");
+            const [selectedPaperSize, setSelectedPaperSize] = useState("");
+            const [quantity, setQuantity] = useState(1);
+            const [subtotal, setSubtotal] = useState(null);
+            const [retailPrice, setRetailPrice] = useState(null);
+            const [errorMessage, setErrorMessage] = useState(null);
+
+            const calculateCost = () => {
+                if (!selectedPaperType || !selectedPaperSize || quantity <= 0) return;
+                const selectedPaper = paperDatabase.find(
+                    (p) => p.type === selectedPaperType && p.size === selectedPaperSize
+                );
+                if (!selectedPaper) {
+                    setErrorMessage("Paper selection not available");
+                    setSubtotal(null);
+                    setRetailPrice(null);
+                    return;
+                }
+                setErrorMessage(null);
+                const costPerSheet = selectedPaper.boxCost / selectedPaper.sheetsPerBox;
+                const inkCost = selectedPaper.inkUsage * inkDatabase["Canon CLI-42"];
+                const totalPrintCost = (costPerSheet + inkCost) * quantity;
+                const totalWithMarkup = totalPrintCost * 2.0;
+                const totalWithTax = totalWithMarkup * 1.1025;
+                setSubtotal(totalPrintCost.toFixed(2));
+                setRetailPrice(totalWithTax.toFixed(2));
+            };
+
+            return (
+                <div>
+                    <h3>Fine Art Print Cost Calculator</h3>
+                    <select className="select" onChange={(e) => setSelectedPaperType(e.target.value)}>
+                        <option value="">Select Paper Type</option>
+                        {[...new Set(paperDatabase.map(p => p.type))].map((type, index) => (
+                            <option key={index} value={type}>{type}</option>
+                        ))}
+                    </select>
+
+                    {selectedPaperType && (
+                        <>
+                            <select className="select" onChange={(e) => setSelectedPaperSize(e.target.value)}>
+                                <option value="">Select Paper Size</option>
+                                {[...new Set(paperDatabase.filter(p => p.type === selectedPaperType).map(p => p.size))].map((size, index) => (
+                                    <option key={index} value={size}>{size}</option>
+                                ))}
+                            </select>
+                            
+                            {/* FIX: Show image only if the selected paper type exists in paperImages */}
+                            {paperImages[selectedPaperType] && (
+                                <div className="paper-image-container">
+                                    <img 
+                                        src={paperImages[selectedPaperType]} 
+                                        alt="Selected Paper Preview" 
+                                        className={`paper-image ${selectedPaperType ? "visible" : "hidden"}`} 
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    <input className="input" type="number" min="1" placeholder="Enter Quantity" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value) || 1)} />
+                    <button className="calculate-button" onClick={calculateCost}>Calculate Total Cost</button>
+                    {errorMessage && <div className="error-message">{errorMessage}</div>}
+                    
+                    {retailPrice && <div id="retail-price" className="retail-price">Retail Price: ${retailPrice}</div>}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<PrintCostCalculator />, document.getElementById("print-cost-calculator"));
+    </script>
+</body>
+</html>
