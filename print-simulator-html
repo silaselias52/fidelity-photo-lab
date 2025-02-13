@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Size Simulator</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { border: 1px solid #ccc; margin-top: 20px; background: white; }
+        input, select { margin: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Upload an Image to Simulate Print Sizes</h2>
+    <input type="file" id="uploadInput" accept="image/*">
+    <br>
+    <label for="sizeSelect">Choose a Print Size:</label>
+    <select id="sizeSelect">
+        <option value="4x6">4x6 inches</option>
+        <option value="5x7">5x7 inches</option>
+        <option value="8x10">8x10 inches</option>
+        <option value="8.5x11">8.5x11 inches</option>
+        <option value="11x17">11x17 inches</option>
+        <option value="13x19">13x19 inches</option>
+    </select>
+    <br>
+    <label for="borderWidth">Select Border Width (in inches):</label>
+    <input type="number" id="borderWidth" value="0.5" min="0" max="5" step="0.1"> inches
+    <br>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const uploadInput = document.getElementById("uploadInput");
+        const sizeSelect = document.getElementById("sizeSelect");
+        const borderWidthInput = document.getElementById("borderWidth");
+
+        const sizes = {
+            "4x6": { width: 400, height: 600 },
+            "5x7": { width: 500, height: 700 },
+            "8x10": { width: 800, height: 1000 },
+            "8.5x11": { width: 850, height: 1100 },
+            "11x17": { width: 1100, height: 1700 },
+            "13x19": { width: 1300, height: 1900 }
+        };
+
+        canvas.width = 2000;
+        canvas.height = 2000;
+
+        function drawWall() {
+            ctx.fillStyle = "#e0e0e0"; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawImage(img, sizeKey, borderInches) {
+            drawWall();
+            let size = sizes[sizeKey];
+            
+            // Determine the correct paper orientation
+            if (img.width > img.height) {
+                // Image is landscape, swap dimensions if necessary
+                if (size.width < size.height) {
+                    size = { width: size.height, height: size.width };
+                }
+            } else {
+                // Image is portrait, ensure dimensions remain portrait
+                if (size.width > size.height) {
+                    size = { width: size.height, height: size.width };
+                }
+            }
+
+            const paperX = (canvas.width - size.width) / 2;
+            const paperY = (canvas.height - size.height) / 2;
+            ctx.fillStyle = "white";
+            ctx.fillRect(paperX, paperY, size.width, size.height);
+
+            const borderPixels = (borderInches / 15) * Math.min(size.width, size.height); // Convert inches to pixels (approx scale)
+            let imgWidth = size.width - borderPixels * 2;
+            let imgHeight = (img.height / img.width) * imgWidth;
+            if (imgHeight > size.height - borderPixels * 2) {
+                imgHeight = size.height - borderPixels * 2;
+                imgWidth = (img.width / img.height) * imgHeight;
+            }
+
+            const imgX = (canvas.width - imgWidth) / 2;
+            const imgY = (canvas.height - imgHeight) / 2;
+
+            const offscreenCanvas = document.createElement('canvas');
+                    offscreenCanvas.width = img.width;
+                    offscreenCanvas.height = img.height;
+                    const offscreenCtx = offscreenCanvas.getContext('2d');
+                    offscreenCtx.drawImage(img, 0, 0);
+                    
+                    ctx.drawImage(offscreenCanvas, imgX, imgY, imgWidth, imgHeight);
+        }
+
+        function updateCanvas() {
+            if (uploadInput.files.length > 0) {
+                const file = uploadInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                const file = uploadInput.files[0];
+                    const img = new Image();
+                img.onload = function () {
+                        // Dynamically adjust canvas size based on uploaded image
+                        canvas.width = window.innerWidth * 0.8;
+                        canvas.height = window.innerHeight * 0.8;
+                        drawImage(img, sizeSelect.value, parseFloat(borderWidthInput.value));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+            if (uploadInput.files.length > 0) {
+                const file = uploadInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = function () {
+                        drawImage(img, sizeSelect.value, parseFloat(borderWidthInput.value));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        uploadInput.addEventListener("change", updateCanvas);
+        sizeSelect.addEventListener("change", updateCanvas);
+        borderWidthInput.addEventListener("input", updateCanvas);
+
+        drawWall();
+    </script>
+
+</body>
+</html>
